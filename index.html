@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>گاه‌شماری شاهنشاهی - Imperial Persian Calendar</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Vazirmatn", "Tahoma", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        color: #d4af37;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .title {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #d4af37;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: 1.2rem;
+        color: #b8860b;
+        font-weight: 300;
+        margin-bottom: 5px;
+      }
+
+      .epoch-info {
+        font-size: 0.9rem;
+        color: #8b7355;
+        font-style: italic;
+      }
+
+      .ornament {
+        width: 200px;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #d4af37, transparent);
+        margin: 20px auto;
+        position: relative;
+      }
+
+      .ornament::before,
+      .ornament::after {
+        content: "⚜";
+        position: absolute;
+        top: -12px;
+        color: #d4af37;
+        font-size: 1.2rem;
+      }
+
+      .ornament::before {
+        left: -15px;
+      }
+      .ornament::after {
+        right: -15px;
+      }
+
+      .calendar-container {
+        background: rgba(212, 175, 55, 0.1);
+        border: 3px solid #d4af37;
+        border-radius: 20px;
+        padding: 35px;
+        margin-bottom: 30px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        position: relative;
+      }
+
+      .calendar-container::before {
+        content: "";
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        background: linear-gradient(45deg, #d4af37, #b8860b, #d4af37, #8b7355);
+        border-radius: 23px;
+        z-index: -1;
+      }
+
+      .calendar-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 35px;
+        flex-wrap: wrap;
+      }
+
+      .tab-button {
+        background: rgba(212, 175, 55, 0.2);
+        border: 2px solid #d4af37;
+        color: #d4af37;
+        padding: 15px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .tab-button:hover {
+        background: rgba(212, 175, 55, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+      }
+
+      .tab-button.active {
+        background: #d4af37;
+        color: #1a1a2e;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);
+      }
+
+      .current-date {
+        text-align: center;
+        margin-bottom: 35px;
+      }
+
+      .date-display {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #d4af37;
+        margin-bottom: 15px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .date-info {
+        font-size: 1.1rem;
+        color: #b8860b;
+        margin-bottom: 8px;
+      }
+
+      .imperial-note {
+        background: rgba(212, 175, 55, 0.15);
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #b8860b;
+      }
+
+      .converter-section {
+        background: rgba(212, 175, 55, 0.1);
+        border: 2px solid #d4af37;
+        border-radius: 15px;
+        padding: 30px;
+        margin-top: 25px;
+      }
+
+      .converter-title {
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #d4af37;
+        margin-bottom: 25px;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 25px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .date-input {
+        background: rgba(212, 175, 55, 0.1);
+        border: 2px solid #d4af37;
+        color: #d4af37;
+        padding: 12px;
+        border-radius: 10px;
+        font-family: inherit;
+        text-align: center;
+        width: 90px;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .date-input:focus {
+        outline: none;
+        box-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
+        border-color: #b8860b;
+      }
+
+      .calendar-select {
+        background: rgba(212, 175, 55, 0.1);
+        border: 2px solid #d4af37;
+        color: #d4af37;
+        padding: 12px;
+        border-radius: 10px;
+        font-family: inherit;
+        width: 140px;
+        font-weight: 500;
+      }
+
+      .convert-btn {
+        background: linear-gradient(45deg, #d4af37, #b8860b);
+        color: #1a1a2e;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+      }
+
+      .convert-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+      }
+
+      .results {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 25px;
+      }
+
+      .result-card {
+        background: rgba(212, 175, 55, 0.1);
+        border: 2px solid rgba(212, 175, 55, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .result-card:hover {
+        border-color: #d4af37;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+      }
+
+      .result-title {
+        font-weight: 700;
+        color: #d4af37;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+
+      .result-date {
+        font-size: 1.1rem;
+        color: #b8860b;
+        font-weight: 500;
+      }
+
+      .pattern-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.04;
+        background-image: radial-gradient(
+            circle at 20% 20%,
+            #d4af37 3px,
+            transparent 3px
+          ),
+          radial-gradient(circle at 80% 80%, #d4af37 2px, transparent 2px),
+          radial-gradient(circle at 40% 60%, #b8860b 2px, transparent 2px);
+        background-size: 80px 80px, 60px 60px, 100px 100px;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      @media (max-width: 768px) {
+        .title {
+          font-size: 2.2rem;
+        }
+        .date-display {
+          font-size: 2.2rem;
+        }
+        .input-group {
+          flex-direction: column;
+          align-items: center;
+        }
+        .calendar-container {
+          padding: 25px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pattern-bg"></div>
+
+    <div class="container">
+      <header class="header">
+        <h1 class="title">گاه‌شماری شاهنشاهی</h1>
+        <p class="subtitle">Imperial Persian Calendar System</p>
+        <p class="epoch-info">
+          از زمان تأسیس امپراتوری هخامنشی توسط کوروش کبیر
+        </p>
+        <div class="ornament"></div>
+      </header>
+
+      <div class="calendar-container">
+        <div class="calendar-tabs">
+          <button
+            class="tab-button active"
+            onclick="switchCalendar('imperial')"
+          >
+            شاهنشاهی
+          </button>
+          <button class="tab-button" onclick="switchCalendar('persian')">
+            خورشیدی
+          </button>
+          <button class="tab-button" onclick="switchCalendar('hijri')">
+            هجری قمری
+          </button>
+          <button class="tab-button" onclick="switchCalendar('gregorian')">
+            میلادی
+          </button>
+        </div>
+
+        <div class="current-date">
+          <div class="date-display" id="currentDate">در حال بارگذاری...</div>
+          <div class="date-info" id="dateInfo"></div>
+          <div class="date-info" id="dayName"></div>
+        </div>
+
+        <div class="imperial-note">
+          <strong>تقویم شاهنشاهی</strong> از سال ۵۵۹ پیش از میلاد (تأسیس
+          امپراتوری هخامنشی) آغاز می‌شود و حدود ۱۱۸۰ سال از تقویم خورشیدی جلوتر
+          است.
+        </div>
+      </div>
+
+      <div class="converter-section">
+        <h2 class="converter-title">تبدیل تاریخ بین تقویم‌های مختلف</h2>
+        <div class="input-group">
+          <input
+            type="number"
+            class="date-input"
+            id="inputYear"
+            placeholder="سال"
+            min="1"
+            max="9999"
+          />
+          <input
+            type="number"
+            class="date-input"
+            id="inputMonth"
+            placeholder="ماه"
+            min="1"
+            max="12"
+          />
+          <input
+            type="number"
+            class="date-input"
+            id="inputDay"
+            placeholder="روز"
+            min="1"
+            max="31"
+          />
+          <select class="calendar-select" id="inputCalendar">
+            <option value="imperial">شاهنشاهی</option>
+            <option value="persian">خورشیدی</option>
+            <option value="hijri">هجری قمری</option>
+            <option value="gregorian">میلادی</option>
+          </select>
+          <button class="convert-btn" onclick="convertDate()">تبدیل</button>
+        </div>
+
+        <div class="results" id="conversionResults"></div>
+      </div>
+    </div>
+
+    <script>
+      // Persian month names
+      const persianMonths = [
+        "فروردین",
+        "اردیبهشت",
+        "خرداد",
+        "تیر",
+        "مرداد",
+        "شهریور",
+        "مهر",
+        "آبان",
+        "آذر",
+        "دی",
+        "بهمن",
+        "اسفند",
+      ];
+
+      // Hijri month names
+      const hijriMonths = [
+        "محرم",
+        "صفر",
+        "ربیع الاول",
+        "ربیع الثانی",
+        "جمادی الاول",
+        "جمادی الثانی",
+        "رجب",
+        "شعبان",
+        "رمضان",
+        "شوال",
+        "ذی القعده",
+        "ذی الحجه",
+      ];
+
+      // Gregorian month names in Persian
+      const gregorianMonths = [
+        "ژانویه",
+        "فوریه",
+        "مارس",
+        "آپریل",
+        "مه",
+        "ژوئن",
+        "ژوئیه",
+        "اوت",
+        "سپتامبر",
+        "اکتبر",
+        "نوامبر",
+        "دسامبر",
+      ];
+
+      // Persian day names
+      const persianDays = [
+        "شنبه",
+        "یکشنبه",
+        "دوشنبه",
+        "سه‌شنبه",
+        "چهارشنبه",
+        "پنج‌شنبه",
+        "جمعه",
+      ];
+
+      let currentCalendar = "imperial";
+
+      // Imperial Persian Calendar epoch difference (approximately 1180 years ahead of Persian Solar)
+      const IMPERIAL_EPOCH_DIFFERENCE = 1180;
+
+      // Convert to Persian numerals
+      function toPersianNum(num) {
+        const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+        return num.toString().replace(/\d/g, (digit) => persianDigits[digit]);
+      }
+
+      // Gregorian to Persian Solar conversion (simplified)
+      function gregorianToPersian(gYear, gMonth, gDay) {
+        // Approximate conversion - Persian year starts around March 21
+        let pYear = gYear - 621;
+        if (gMonth < 3 || (gMonth === 3 && gDay < 21)) {
+          pYear--;
+        }
+
+        // Simple month mapping
+        let pMonth, pDay;
+        const springStart = new Date(gYear, 2, 21); // March 21
+        const currentDate = new Date(gYear, gMonth - 1, gDay);
+        const dayOfYear = Math.floor(
+          (currentDate - springStart) / (1000 * 60 * 60 * 24)
+        );
+
+        if (dayOfYear < 0) {
+          // Previous Persian year
+          pYear--;
+          const prevSpringStart = new Date(gYear - 1, 2, 21);
+          const adjustedDayOfYear = Math.floor(
+            (currentDate - prevSpringStart) / (1000 * 60 * 60 * 24)
+          );
+          [pMonth, pDay] = dayOfYearToPersianMonthDay(adjustedDayOfYear);
+        } else {
+          [pMonth, pDay] = dayOfYearToPersianMonthDay(dayOfYear);
+        }
+
+        return { year: pYear, month: pMonth, day: pDay };
+      }
+
+      // Convert day of year to Persian month and day
+      function dayOfYearToPersianMonthDay(dayOfYear) {
+        if (dayOfYear < 186) {
+          // First 6 months (31 days each)
+          const month = Math.floor(dayOfYear / 31) + 1;
+          const day = (dayOfYear % 31) + 1;
+          return [Math.min(month, 6), day];
+        } else {
+          // Last 6 months (30 days each, except last month)
+          const remainingDays = dayOfYear - 186;
+          const month = Math.floor(remainingDays / 30) + 7;
+          const day = (remainingDays % 30) + 1;
+          return [Math.min(month, 12), Math.min(day, month === 12 ? 29 : 30)];
+        }
+      }
+
+      // Persian to Gregorian conversion (simplified)
+      function persianToGregorian(pYear, pMonth, pDay) {
+        const gYear = pYear + 621;
+
+        // Calculate day of year in Persian calendar
+        let dayOfYear = 0;
+        if (pMonth <= 6) {
+          dayOfYear = (pMonth - 1) * 31 + pDay - 1;
+        } else {
+          dayOfYear = 186 + (pMonth - 7) * 30 + pDay - 1;
+        }
+
+        // Add to March 21 (Nowruz)
+        const nowruz = new Date(gYear, 2, 21); // March 21
+        const targetDate = new Date(
+          nowruz.getTime() + dayOfYear * 24 * 60 * 60 * 1000
+        );
+
+        return {
+          year: targetDate.getFullYear(),
+          month: targetDate.getMonth() + 1,
+          day: targetDate.getDate(),
+        };
+      }
+
+      // Imperial Persian Calendar conversions
+      function persianToImperial(pYear, pMonth, pDay) {
+        return {
+          year: pYear + IMPERIAL_EPOCH_DIFFERENCE,
+          month: pMonth,
+          day: pDay,
+        };
+      }
+
+      function imperialToPersian(iYear, iMonth, iDay) {
+        return {
+          year: iYear - IMPERIAL_EPOCH_DIFFERENCE,
+          month: iMonth,
+          day: iDay,
+        };
+      }
+
+      // Gregorian to Imperial (via Persian)
+      function gregorianToImperial(gYear, gMonth, gDay) {
+        const persian = gregorianToPersian(gYear, gMonth, gDay);
+        return persianToImperial(persian.year, persian.month, persian.day);
+      }
+
+      // Imperial to Gregorian (via Persian)
+      function imperialToGregorian(iYear, iMonth, iDay) {
+        const persian = imperialToPersian(iYear, iMonth, iDay);
+        return persianToGregorian(persian.year, persian.month, persian.day);
+      }
+
+      // Simple Hijri conversions (approximations)
+      function gregorianToHijri(gYear, gMonth, gDay) {
+        const totalDays = Math.floor(
+          (new Date(gYear, gMonth - 1, gDay) - new Date(622, 6, 16)) /
+            (1000 * 60 * 60 * 24)
+        );
+        const hYear = Math.floor(totalDays / 354.367) + 1;
+        const remainingDays = totalDays - Math.floor((hYear - 1) * 354.367);
+
+        let hMonth = 1;
+        let hDay = remainingDays;
+        const monthDays = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
+
+        for (let i = 0; i < 12; i++) {
+          if (hDay <= monthDays[i]) {
+            hMonth = i + 1;
+            break;
+          }
+          hDay -= monthDays[i];
+        }
+
+        return {
+          year: Math.max(1, hYear),
+          month: hMonth,
+          day: Math.max(1, hDay),
+        };
+      }
+
+      function hijriToGregorian(hYear, hMonth, hDay) {
+        const totalDays =
+          Math.floor((hYear - 1) * 354.367) +
+          [0, 30, 59, 89, 118, 148, 177, 207, 236, 266, 295, 325][hMonth - 1] +
+          hDay -
+          1;
+
+        const hijriEpoch = new Date(622, 6, 16);
+        const gDate = new Date(
+          hijriEpoch.getTime() + totalDays * 24 * 60 * 60 * 1000
+        );
+
+        return {
+          year: gDate.getFullYear(),
+          month: gDate.getMonth() + 1,
+          day: gDate.getDate(),
+        };
+      }
+
+      // Get current date in all calendar systems
+      function getCurrentDate() {
+        const now = new Date();
+        const gDate = {
+          year: now.getFullYear(),
+          month: now.getMonth() + 1,
+          day: now.getDate(),
+        };
+
+        const pDate = gregorianToPersian(gDate.year, gDate.month, gDate.day);
+        const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
+        const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+
+        return {
+          gregorian: gDate,
+          persian: pDate,
+          imperial: iDate,
+          hijri: hDate,
+        };
+      }
+
+      // Format date display
+      function formatDate(date, calendar) {
+        const months =
+          calendar === "persian" || calendar === "imperial"
+            ? persianMonths
+            : calendar === "hijri"
+            ? hijriMonths
+            : gregorianMonths;
+
+        return `${toPersianNum(date.day)} ${
+          months[date.month - 1]
+        } ${toPersianNum(date.year)}`;
+      }
+
+      // Get Persian day name
+      function getPersianDayName() {
+        const now = new Date();
+        return persianDays[now.getDay()];
+      }
+
+      // Update display
+      function updateDisplay() {
+        try {
+          const dates = getCurrentDate();
+          const currentDateData = dates[currentCalendar];
+
+          document.getElementById("currentDate").textContent = formatDate(
+            currentDateData,
+            currentCalendar
+          );
+          document.getElementById("dayName").textContent = getPersianDayName();
+
+          const calendarNames = {
+            imperial: "تقویم شاهنشاهی (از تأسیس امپراتوری هخامنشی)",
+            persian: "تقویم خورشیدی",
+            hijri: "تقویم هجری قمری",
+            gregorian: "تقویم میلادی",
+          };
+
+          document.getElementById("dateInfo").textContent =
+            calendarNames[currentCalendar];
+        } catch (error) {
+          console.error("Error updating display:", error);
+          document.getElementById("currentDate").textContent =
+            "خطا در نمایش تاریخ";
+        }
+      }
+
+      // Switch calendar
+      function switchCalendar(calendar) {
+        currentCalendar = calendar;
+
+        // Update active tab
+        document.querySelectorAll(".tab-button").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        updateDisplay();
+      }
+
+      // Convert date between calendars
+      function convertDate() {
+        const year = parseInt(document.getElementById("inputYear").value);
+        const month = parseInt(document.getElementById("inputMonth").value);
+        const day = parseInt(document.getElementById("inputDay").value);
+        const inputCalendar = document.getElementById("inputCalendar").value;
+
+        if (!year || !month || !day) {
+          alert("لطفاً تمام فیلدها را پر کنید");
+          return;
+        }
+
+        try {
+          let results = {};
+
+          if (inputCalendar === "imperial") {
+            const pDate = imperialToPersian(year, month, day);
+            const gDate = persianToGregorian(
+              pDate.year,
+              pDate.month,
+              pDate.day
+            );
+            const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+            results = {
+              imperial: { year, month, day },
+              persian: pDate,
+              gregorian: gDate,
+              hijri: hDate,
+            };
+          } else if (inputCalendar === "persian") {
+            const iDate = persianToImperial(year, month, day);
+            const gDate = persianToGregorian(year, month, day);
+            const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+            results = {
+              persian: { year, month, day },
+              imperial: iDate,
+              gregorian: gDate,
+              hijri: hDate,
+            };
+          } else if (inputCalendar === "hijri") {
+            const gDate = hijriToGregorian(year, month, day);
+            const pDate = gregorianToPersian(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
+            results = {
+              hijri: { year, month, day },
+              gregorian: gDate,
+              persian: pDate,
+              imperial: iDate,
+            };
+          } else {
+            const pDate = gregorianToPersian(year, month, day);
+            const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
+            const hDate = gregorianToHijri(year, month, day);
+            results = {
+              gregorian: { year, month, day },
+              persian: pDate,
+              imperial: iDate,
+              hijri: hDate,
+            };
+          }
+
+          displayResults(results);
+        } catch (error) {
+          alert("خطا در تبدیل تاریخ");
+          console.error("Conversion error:", error);
+        }
+      }
+
+      // Display conversion results
+      function displayResults(results) {
+        const container = document.getElementById("conversionResults");
+        container.innerHTML = "";
+
+        const titles = {
+          imperial: "شاهنشاهی",
+          persian: "خورشیدی",
+          hijri: "هجری قمری",
+          gregorian: "میلادی",
+        };
+
+        Object.keys(results).forEach((calendar) => {
+          const card = document.createElement("div");
+          card.className = "result-card";
+
+          card.innerHTML = `
+                    <div class="result-title">${titles[calendar]}</div>
+                    <div class="result-date">${formatDate(
+                      results[calendar],
+                      calendar
+                    )}</div>
+                `;
+
+          container.appendChild(card);
+        });
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        updateDisplay();
+        setInterval(updateDisplay, 60000);
+      });
+
+      // Fallback initialization
+      setTimeout(updateDisplay, 100);
+    </script>
+  </body>
+</html>
