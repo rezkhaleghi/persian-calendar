@@ -726,6 +726,7 @@
           <div class="date-numeric" id="dateNumeric"></div>
           <div class="date-info" id="dateInfo">در حال بارگذاری...</div>
           <div class="day-name" id="dayName"></div>
+          <div class="current-time persian-num" id="currentTime"></div>
         </div>
 
         <div class="info-badge">
@@ -899,6 +900,23 @@
           )}`;
         }
         return `${year}/${month}/${day}`;
+      }
+
+      // Format current time
+      function formatCurrentTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, "0");
+        const minutes = now.getMinutes().toString().padStart(2, "0");
+        const seconds = now.getSeconds().toString().padStart(2, "0");
+        return `${toPersianNum(hours)}:${toPersianNum(minutes)}:${toPersianNum(
+          seconds
+        )}`;
+      }
+
+      // Update time display
+      function updateTimeDisplay() {
+        document.getElementById("currentTime").textContent =
+          formatCurrentTime();
       }
 
       // Calculate time difference
@@ -1298,7 +1316,9 @@
       document.addEventListener("DOMContentLoaded", function () {
         createParticles();
         updateDisplay();
+        updateTimeDisplay();
         setInterval(updateDisplay, 60000);
+        setInterval(updateTimeDisplay, 1000);
       });
 
       setTimeout(updateDisplay, 100);
