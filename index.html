@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>گاه‌شماری ایرانی - Persian Calendar</title>
+    <title>گاه‌شماری چندگانه - Multi Calendar</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap");
 
@@ -48,7 +48,6 @@
         min-height: 100vh;
       }
 
-      /* Animated background */
       .bg-animation {
         position: fixed;
         top: 0;
@@ -84,7 +83,6 @@
         }
       }
 
-      /* Floating particles */
       .particles {
         position: fixed;
         top: 0;
@@ -122,14 +120,12 @@
         }
       }
 
-      /* Container */
       .container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 2rem;
       }
 
-      /* Header */
       .header {
         text-align: center;
         margin-bottom: 4rem;
@@ -212,7 +208,6 @@
         margin: 0 auto;
       }
 
-      /* Main calendar card */
       .calendar-card {
         background: rgba(255, 255, 255, 0.02);
         backdrop-filter: var(--blur-bg);
@@ -236,7 +231,6 @@
         opacity: 0.5;
       }
 
-      /* Navigation tabs */
       .nav-tabs {
         display: flex;
         gap: 0.5rem;
@@ -296,7 +290,6 @@
         opacity: 1;
       }
 
-      /* Date display */
       .date-display {
         text-align: center;
         margin-bottom: 3rem;
@@ -332,7 +325,6 @@
         color: var(--text-muted);
       }
 
-      /* Info badge */
       .info-badge {
         display: inline-flex;
         align-items: center;
@@ -352,7 +344,6 @@
         margin-right: auto;
       }
 
-      /* Converter section */
       .converter {
         background: rgba(255, 255, 255, 0.02);
         backdrop-filter: var(--blur-bg);
@@ -386,7 +377,6 @@
         background-clip: text;
       }
 
-      /* Input group */
       .input-group {
         display: flex;
         gap: 1rem;
@@ -449,7 +439,6 @@
         box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
       }
 
-      /* Convert button */
       .convert-btn {
         background: var(--gradient-primary);
         border: none;
@@ -495,7 +484,6 @@
         transform: translateY(0);
       }
 
-      /* Results grid */
       .results-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -561,7 +549,6 @@
         font-family: "Inter", monospace;
       }
 
-      /* Time difference section */
       .time-difference {
         background: rgba(124, 58, 237, 0.1);
         border: 1px solid rgba(124, 58, 237, 0.2);
@@ -592,7 +579,6 @@
         color: var(--accent-gold);
       }
 
-      /* Status indicator */
       .status-indicator {
         position: fixed;
         top: 2rem;
@@ -629,7 +615,6 @@
         }
       }
 
-      /* Responsive design */
       @media (max-width: 768px) {
         .container {
           padding: 1rem;
@@ -657,13 +642,11 @@
         }
       }
 
-      /* Persian number styling */
       .persian-num {
         font-feature-settings: "tnum";
         font-variant-numeric: tabular-nums;
       }
 
-      /* Loading animation */
       .loading {
         display: inline-block;
         width: 20px;
@@ -694,12 +677,12 @@
     <div class="container">
       <header class="header">
         <div class="logo">
-          <img src="iran.svg" alt="Iran Logo" />
+          <img src="iran.svg" alt="Multi Calendar Logo" />
         </div>
-        <h1 class="title">گاه‌شماری ایرانی</h1>
-        <p class="subtitle">Persian Calendar System</p>
+        <h1 class="title">گاه‌شماری چندگانه</h1>
+        <p class="subtitle">Multi Calendar System</p>
         <p class="description">
-          سیستم پیشرفته تبدیل و نمایش تاریخ بر اساس انواع سیستم ها
+          سیستم پیشرفته تبدیل و نمایش تاریخ بر اساس انواع تقویم‌ها
         </p>
       </header>
 
@@ -716,6 +699,12 @@
           </button>
           <button class="nav-tab" onclick="switchCalendar('gregorian')">
             میلادی
+          </button>
+          <button class="nav-tab" onclick="switchCalendar('chinese')">
+            چینی
+          </button>
+          <button class="nav-tab" onclick="switchCalendar('hebrew')">
+            عبری
           </button>
           <button class="nav-tab" onclick="switchCalendar('unix')">
             یونیکس
@@ -734,9 +723,7 @@
 
         <div class="info-badge">
           <span>ℹ️</span>
-          <span id="calendarDescription"
-            >تقویم شاهنشاهی حدود ۱۱۸۰ سال از تقویم خورشیدی پیشتر است</span
-          >
+          <span id="calendarDescription"></span>
         </div>
       </div>
 
@@ -798,6 +785,8 @@
               <option value="persian">خورشیدی</option>
               <option value="hijri">هجری قمری</option>
               <option value="gregorian">میلادی</option>
+              <option value="chinese">چینی</option>
+              <option value="hebrew">عبری</option>
               <option value="unix">یونیکس تایم‌استمپ</option>
             </select>
           </div>
@@ -877,6 +866,37 @@
         "December",
       ];
 
+      const chineseMonths = [
+        "ماه اول",
+        "ماه دوم",
+        "ماه سوم",
+        "ماه چهارم",
+        "ماه پنجم",
+        "ماه ششم",
+        "ماه هفتم",
+        "ماه هشتم",
+        "ماه نهم",
+        "ماه دهم",
+        "ماه یازدهم",
+        "ماه دوازدهم",
+      ];
+
+      const hebrewMonths = [
+        "تشرین",
+        "حشوان",
+        "کسلیو",
+        "طوت",
+        "شباط",
+        "آدار اول",
+        "آدار دوم",
+        "نیسان",
+        "ایار",
+        "سیوان",
+        "تموز",
+        "آو",
+        "ایلول",
+      ];
+
       const persianDays = [
         "شنبه",
         "یکشنبه",
@@ -910,6 +930,10 @@
           "تقویم هجری قمری از هجرت محمد از مکه به مدینه (۶۲۲ میلادی) آغاز می‌شود و بر اساس حرکت ماه محاسبه می‌شود.",
         gregorian:
           "تقویم میلادی از تولد مسیح آغاز می‌شود و امروزه رایج‌ترین تقویم جهان است که بر اساس حرکت زمین به دور خورشید محاسبه می‌شود.",
+        chinese:
+          "تقویم چینی یک تقویم قمری-خورشیدی است که بر اساس چرخه‌های ماه و خورشید محاسبه می‌شود و سال‌ها با نام‌های حیوانی و عناصر مشخص می‌شوند.",
+        hebrew:
+          "تقویم عبری یک تقویم قمری-خورشیدی است که از زمان خلقت جهان (طبق سنت یهودی) محاسبه می‌شود و برای مناسبت‌های مذهبی یهودی استفاده می‌شود.",
         unix: "تایم‌استمپ یونیکس تعداد ثانیه‌های سپری شده از ۱ ژانویه ۱۹۷۰ را نشان می‌دهد.",
       };
 
@@ -1132,6 +1156,124 @@
         };
       }
 
+      function gregorianToChinese(gYear, gMonth, gDay) {
+        // Approximate Chinese lunar calendar conversion
+        // Using a simplified method based on lunar cycles
+        const lunarEpoch = new Date(-2637, 1, 15); // Approx start of Chinese calendar
+        const daysSinceEpoch = Math.floor(
+          (new Date(gYear, gMonth - 1, gDay) - lunarEpoch) /
+            (1000 * 60 * 60 * 24)
+        );
+        const lunarYear = Math.floor(daysSinceEpoch / 354.367) + 2637;
+        const remainingDays = daysSinceEpoch % 354.367;
+        let cMonth = Math.floor(remainingDays / 29.53) + 1;
+        let cDay = Math.floor(remainingDays % 29.53) + 1;
+
+        // Stem-branch and zodiac
+        const stems = [
+          "جیا",
+          "یی",
+          "بینگ",
+          "دینگ",
+          "وو",
+          "جی",
+          "گنگ",
+          "شین",
+          "رن",
+          "گوی",
+        ];
+        const branches = [
+          "زی",
+          "چو",
+          "یین",
+          "مائو",
+          "چن",
+          "سی",
+          "وو",
+          "وی",
+          "شن",
+          "یو",
+          "شو",
+          "های",
+        ];
+        const zodiacs = [
+          "موش",
+          "گاو",
+          "ببر",
+          "خرگوش",
+          "اژدها",
+          "مار",
+          "اسب",
+          "بز",
+          "میمون",
+          "خروس",
+          "سگ",
+          "خوک",
+        ];
+        const yearIndex = (lunarYear - 4) % 60;
+        const stemBranch = `${stems[yearIndex % 10]}-${
+          branches[yearIndex % 12]
+        }`;
+        const zodiac = zodiacs[yearIndex % 12];
+
+        return {
+          year: lunarYear,
+          month: Math.min(cMonth, 12),
+          day: Math.min(cDay, 30),
+          stemBranch,
+          zodiac,
+        };
+      }
+
+      function chineseToGregorian(cYear, cMonth, cDay) {
+        // Approximate reverse conversion
+        const lunarEpoch = new Date(-2637, 1, 15);
+        const totalDays =
+          (cYear - 2637) * 354.367 + (cMonth - 1) * 29.53 + (cDay - 1);
+        const gDate = new Date(
+          lunarEpoch.getTime() + totalDays * 24 * 60 * 60 * 1000
+        );
+        return {
+          year: gDate.getFullYear(),
+          month: gDate.getMonth() + 1,
+          day: gDate.getDate(),
+        };
+      }
+
+      function gregorianToHebrew(gYear, gMonth, gDay) {
+        // Approximate Hebrew calendar conversion
+        const hebrewEpoch = new Date(-3761, 9, 7); // Approx start of Hebrew calendar
+        const daysSinceEpoch = Math.floor(
+          (new Date(gYear, gMonth - 1, gDay) - hebrewEpoch) /
+            (1000 * 60 * 60 * 24)
+        );
+        const hYear = Math.floor(daysSinceEpoch / 354.367) + 3761;
+        const remainingDays = daysSinceEpoch % 354.367;
+        let hMonth = Math.floor(remainingDays / 29.53) + 1;
+        let hDay = Math.floor(remainingDays % 29.53) + 1;
+
+        return {
+          year: hYear,
+          month: Math.min(hMonth, 13),
+          day: Math.min(hDay, 30),
+        };
+      }
+
+      function hebrewToGregorian(hYear, hMonth, hDay) {
+        // Approximate reverse conversion
+        const hebrewEpoch = new Date(-3761, 9, 7);
+        const totalDays =
+          (hYear - 3761) * 354.367 + (hMonth - 1) * 29.53 + (hDay - 1);
+        const gDate = new Date(
+          hebrewEpoch.getTime() + totalDays * 24 * 60 * 60 * 1000
+        );
+        return {
+          year: gDate.getFullYear(),
+          month: gDate.getMonth() + 1,
+          day: gDate.getDate(),
+        };
+      }
+
       function unixToGregorian(timestamp) {
         const date = new Date(timestamp * 1000);
         return {
@@ -1159,12 +1301,16 @@
         const pDate = gregorianToPersian(gDate.year, gDate.month, gDate.day);
         const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
         const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+        const cDate = gregorianToChinese(gDate.year, gDate.month, gDate.day);
+        const heDate = gregorianToHebrew(gDate.year, gDate.month, gDate.day);
 
         return {
           gregorian: gDate,
           persian: pDate,
           imperial: iDate,
           hijri: hDate,
+          chinese: cDate,
+          hebrew: heDate,
           unix: { timestampSeconds, timestampMillis },
         };
       }
@@ -1173,11 +1319,20 @@
         if (calendar === "unix") {
           return `${toPersianNum(date.timestampSeconds)} ثانیه`;
         }
+        if (calendar === "chinese") {
+          return `${toPersianNum(date.day)} ${
+            chineseMonths[date.month - 1]
+          } ${toPersianNum(date.year)} (${date.stemBranch}, ${date.zodiac})`;
+        }
         const months =
           calendar === "persian" || calendar === "imperial"
             ? persianMonths
             : calendar === "hijri"
             ? hijriMonths
+            : calendar === "hebrew"
+            ? hebrewMonths
+            : calendar === "chinese"
+            ? chineseMonths
             : gregorianMonths;
 
         let monthDisplay = months[date.month - 1];
@@ -1190,24 +1345,6 @@
         return `${toPersianNum(date.day)} ${monthDisplay} ${toPersianNum(
           date.year
         )}`;
-      }
-
-      function formatNumericDate(date, calendar) {
-        if (calendar === "unix") {
-          return `ثانیه: ${toPersianNum(
-            date.timestampSeconds
-          )}<br>میلی‌ثانیه: ${toPersianNum(date.timestampMillis)}`;
-        }
-        const year = date.year.toString().padStart(4, "0");
-        const month = date.month.toString().padStart(2, "0");
-        const day = date.day.toString().padStart(2, "0");
-
-        if (calendar === "persian" || calendar === "imperial") {
-          return `${toPersianNum(year)}/${toPersianNum(month)}/${toPersianNum(
-            day
-          )}`;
-        }
-        return `${year}/${month}/${day}`;
       }
 
       function getPersianDayName(date) {
@@ -1234,7 +1371,7 @@
           );
 
           document.getElementById("dayName").textContent =
-            currentCalendar === "unix"
+            currentCalendar === "unix" || currentCalendar === "chinese"
               ? ""
               : getPersianDayName(currentDateData);
 
@@ -1243,6 +1380,8 @@
             persian: "تقویم خورشیدی",
             hijri: "تقویم هجری قمری",
             gregorian: "تقویم میلادی",
+            chinese: "تقویم چینی",
+            hebrew: "تقویم عبری",
             unix: "تایم‌استمپ یونیکس",
           };
 
@@ -1251,12 +1390,13 @@
           document.getElementById("calendarDescription").textContent =
             calendarDescriptions[currentCalendar];
 
-          // Update status
           const statusIcons = {
             imperial: "👑",
             persian: "☀️",
             hijri: "🌙",
             gregorian: "🌍",
+            chinese: "🐉",
+            hebrew: "✡️",
             unix: "⏱️",
           };
           document.getElementById(
@@ -1330,6 +1470,16 @@
             );
             const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
             const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+            const cDate = gregorianToChinese(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const heDate = gregorianToHebrew(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
             results = {
               unix: {
                 timestampSeconds: timestamp,
@@ -1339,6 +1489,8 @@
               persian: pDate,
               imperial: iDate,
               hijri: hDate,
+              chinese: cDate,
+              hebrew: heDate,
             };
             gregorianDate = gDate;
           } else if (inputCalendar === "imperial") {
@@ -1349,6 +1501,16 @@
               pDate.day
             );
             const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+            const cDate = gregorianToChinese(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const heDate = gregorianToHebrew(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
             const unixTimestamp = gregorianToUnix(
               gDate.year,
               gDate.month,
@@ -1359,6 +1521,8 @@
               persian: pDate,
               gregorian: gDate,
               hijri: hDate,
+              chinese: cDate,
+              hebrew: heDate,
               unix: {
                 timestampSeconds: unixTimestamp,
                 timestampMillis: unixTimestamp * 1000,
@@ -1369,6 +1533,16 @@
             const iDate = persianToImperial(year, month, day);
             const gDate = persianToGregorian(year, month, day);
             const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+            const cDate = gregorianToChinese(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const heDate = gregorianToHebrew(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
             const unixTimestamp = gregorianToUnix(
               gDate.year,
               gDate.month,
@@ -1379,6 +1553,8 @@
               imperial: iDate,
               gregorian: gDate,
               hijri: hDate,
+              chinese: cDate,
+              hebrew: heDate,
               unix: {
                 timestampSeconds: unixTimestamp,
                 timestampMillis: unixTimestamp * 1000,
@@ -1393,6 +1569,16 @@
               gDate.day
             );
             const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
+            const cDate = gregorianToChinese(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const heDate = gregorianToHebrew(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
             const unixTimestamp = gregorianToUnix(
               gDate.year,
               gDate.month,
@@ -1403,6 +1589,77 @@
               gregorian: gDate,
               persian: pDate,
               imperial: iDate,
+              chinese: cDate,
+              hebrew: heDate,
+              unix: {
+                timestampSeconds: unixTimestamp,
+                timestampMillis: unixTimestamp * 1000,
+              },
+            };
+            gregorianDate = gDate;
+          } else if (inputCalendar === "chinese") {
+            const gDate = chineseToGregorian(year, month, day);
+            const pDate = gregorianToPersian(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
+            const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+            const heDate = gregorianToHebrew(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const unixTimestamp = gregorianToUnix(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const cDate = gregorianToChinese(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            results = {
+              chinese: cDate,
+              gregorian: gDate,
+              persian: pDate,
+              imperial: iDate,
+              hijri: hDate,
+              hebrew: heDate,
+              unix: {
+                timestampSeconds: unixTimestamp,
+                timestampMillis: unixTimestamp * 1000,
+              },
+            };
+            gregorianDate = gDate;
+          } else if (inputCalendar === "hebrew") {
+            const gDate = hebrewToGregorian(year, month, day);
+            const pDate = gregorianToPersian(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
+            const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
+            const cDate = gregorianToChinese(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            const unixTimestamp = gregorianToUnix(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
+            results = {
+              hebrew: { year, month, day },
+              gregorian: gDate,
+              persian: pDate,
+              imperial: iDate,
+              hijri: hDate,
+              chinese: cDate,
               unix: {
                 timestampSeconds: unixTimestamp,
                 timestampMillis: unixTimestamp * 1000,
@@ -1413,12 +1670,16 @@
             const pDate = gregorianToPersian(year, month, day);
             const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
             const hDate = gregorianToHijri(year, month, day);
+            const cDate = gregorianToChinese(year, month, day);
+            const heDate = gregorianToHebrew(year, month, day);
             const unixTimestamp = gregorianToUnix(year, month, day);
             results = {
               gregorian: { year, month, day },
               persian: pDate,
               imperial: iDate,
               hijri: hDate,
+              chinese: cDate,
+              hebrew: heDate,
               unix: {
                 timestampSeconds: unixTimestamp,
                 timestampMillis: unixTimestamp * 1000,
@@ -1444,6 +1705,8 @@
           persian: "خورشیدی",
           hijri: "هجری قمری",
           gregorian: "میلادی",
+          chinese: "چینی",
+          hebrew: "عبری",
           unix: "یونیکس تایم‌استمپ",
         };
 
@@ -1503,7 +1766,7 @@
         updateDisplay();
         updateTimeDisplay();
         toggleInputFields();
-        setInterval(updateDisplay, 1000); // Update every second
+        setInterval(updateDisplay, 1000);
         setInterval(updateTimeDisplay, 1000);
       });
 
