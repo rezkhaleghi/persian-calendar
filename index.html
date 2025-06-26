@@ -862,6 +862,21 @@
         "دسامبر",
       ];
 
+      const gregorianMonthsEnglish = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+
       const persianDays = [
         "شنبه",
         "یکشنبه",
@@ -870,6 +885,16 @@
         "چهارشنبه",
         "پنج‌شنبه",
         "جمعه",
+      ];
+
+      const englishDays = [
+        "Saturday",
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
       ];
 
       let currentCalendar = "imperial";
@@ -910,7 +935,9 @@
       // Format numeric date
       function formatNumericDate(date, calendar) {
         if (calendar === "unix") {
-          return toPersianNum(date.timestamp);
+          return `ثانیه: ${toPersianNum(
+            date.timestampSeconds
+          )}<br>میلی‌ثانیه: ${toPersianNum(date.timestampMillis)}`;
         }
         const year = date.year.toString().padStart(4, "0");
         const month = date.month.toString().padStart(2, "0");
@@ -1126,7 +1153,8 @@
           month: now.getMonth() + 1,
           day: now.getDate(),
         };
-        const timestamp = Math.floor(now.getTime() / 1000);
+        const timestampSeconds = Math.floor(now.getTime() / 1000);
+        const timestampMillis = now.getTime();
 
         const pDate = gregorianToPersian(gDate.year, gDate.month, gDate.day);
         const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
@@ -1137,13 +1165,13 @@
           persian: pDate,
           imperial: iDate,
           hijri: hDate,
-          unix: { timestamp },
+          unix: { timestampSeconds, timestampMillis },
         };
       }
 
       function formatDate(date, calendar) {
         if (calendar === "unix") {
-          return toPersianNum(date.timestamp);
+          return `${toPersianNum(date.timestampSeconds)} ثانیه`;
         }
         const months =
           calendar === "persian" || calendar === "imperial"
@@ -1152,14 +1180,23 @@
             ? hijriMonths
             : gregorianMonths;
 
-        return `${toPersianNum(date.day)} ${
-          months[date.month - 1]
-        } ${toPersianNum(date.year)}`;
+        let monthDisplay = months[date.month - 1];
+        if (calendar === "gregorian") {
+          monthDisplay = `${months[date.month - 1]} (${
+            gregorianMonthsEnglish[date.month - 1]
+          })`;
+        }
+
+        return `${toPersianNum(date.day)} ${monthDisplay} ${toPersianNum(
+          date.year
+        )}`;
       }
 
       function formatNumericDate(date, calendar) {
         if (calendar === "unix") {
-          return toPersianNum(date.timestamp);
+          return `ثانیه: ${toPersianNum(
+            date.timestampSeconds
+          )}<br>میلی‌ثانیه: ${toPersianNum(date.timestampMillis)}`;
         }
         const year = date.year.toString().padStart(4, "0");
         const month = date.month.toString().padStart(2, "0");
@@ -1173,9 +1210,13 @@
         return `${year}/${month}/${day}`;
       }
 
-      function getPersianDayName() {
-        const now = new Date();
-        return persianDays[now.getDay()];
+      function getPersianDayName(date) {
+        const now = new Date(date.year, date.month - 1, date.day);
+        const dayIndex = now.getDay();
+        if (currentCalendar === "gregorian") {
+          return `${persianDays[dayIndex]} (${englishDays[dayIndex]})`;
+        }
+        return persianDays[dayIndex];
       }
 
       function updateDisplay() {
@@ -1187,11 +1228,15 @@
             currentDateData,
             currentCalendar
           );
-          document.getElementById("dateNumeric").textContent =
-            formatNumericDate(currentDateData, currentCalendar);
+          document.getElementById("dateNumeric").innerHTML = formatNumericDate(
+            currentDateData,
+            currentCalendar
+          );
 
           document.getElementById("dayName").textContent =
-            currentCalendar === "unix" ? "" : getPersianDayName();
+            currentCalendar === "unix"
+              ? ""
+              : getPersianDayName(currentDateData);
 
           const calendarNames = {
             imperial: "تقویم شاهنشاهی",
@@ -1286,7 +1331,10 @@
             const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
             const hDate = gregorianToHijri(gDate.year, gDate.month, gDate.day);
             results = {
-              unix: { timestamp },
+              unix: {
+                timestampSeconds: timestamp,
+                timestampMillis: timestamp * 1000,
+              },
               gregorian: gDate,
               persian: pDate,
               imperial: iDate,
@@ -1311,7 +1359,10 @@
               persian: pDate,
               gregorian: gDate,
               hijri: hDate,
-              unix: { timestamp: unixTimestamp },
+              unix: {
+                timestampSeconds: unixTimestamp,
+                timestampMillis: unixTimestamp * 1000,
+              },
             };
             gregorianDate = gDate;
           } else if (inputCalendar === "persian") {
@@ -1328,7 +1379,10 @@
               imperial: iDate,
               gregorian: gDate,
               hijri: hDate,
-              unix: { timestamp: unixTimestamp },
+              unix: {
+                timestampSeconds: unixTimestamp,
+                timestampMillis: unixTimestamp * 1000,
+              },
             };
             gregorianDate = gDate;
           } else if (inputCalendar === "hijri") {
@@ -1349,7 +1403,10 @@
               gregorian: gDate,
               persian: pDate,
               imperial: iDate,
-              unix: { timestamp: unixTimestamp },
+              unix: {
+                timestampSeconds: unixTimestamp,
+                timestampMillis: unixTimestamp * 1000,
+              },
             };
             gregorianDate = gDate;
           } else {
@@ -1362,7 +1419,10 @@
               persian: pDate,
               imperial: iDate,
               hijri: hDate,
-              unix: { timestamp: unixTimestamp },
+              unix: {
+                timestampSeconds: unixTimestamp,
+                timestampMillis: unixTimestamp * 1000,
+              },
             };
             gregorianDate = { year, month, day };
           }
@@ -1443,7 +1503,7 @@
         updateDisplay();
         updateTimeDisplay();
         toggleInputFields();
-        setInterval(updateDisplay, 60000);
+        setInterval(updateDisplay, 1000); // Update every second
         setInterval(updateTimeDisplay, 1000);
       });
 
