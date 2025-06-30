@@ -963,6 +963,7 @@
 
       let currentCalendar = "imperial";
       const IMPERIAL_EPOCH_DIFFERENCE = 1180;
+      const ISTANBUL_OFFSET = 3 * 60 * 60 * 1000; // +3 GMT in milliseconds
 
       // Calendar descriptions
       const calendarDescriptions = {
@@ -1023,10 +1024,10 @@
 
       // Format current time
       function formatCurrentTime() {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, "0");
-        const minutes = now.getMinutes().toString().padStart(2, "0");
-        const seconds = now.getSeconds().toString().padStart(2, "0");
+        const now = new Date(Date.now() + ISTANBUL_OFFSET);
+        const hours = now.getUTCHours().toString().padStart(2, "0");
+        const minutes = now.getUTCMinutes().toString().padStart(2, "0");
+        const seconds = now.getUTCSeconds().toString().padStart(2, "0");
         return `${toPersianNum(hours)}:${toPersianNum(minutes)}:${toPersianNum(
           seconds
         )}`;
@@ -1040,11 +1041,9 @@
 
       // Calculate time difference
       function calculateTimeDifference(targetDate) {
-        const now = new Date();
+        const now = new Date(Date.now() + ISTANBUL_OFFSET);
         const target = new Date(
-          targetDate.year,
-          targetDate.month - 1,
-          targetDate.day
+          Date.UTC(targetDate.year, targetDate.month - 1, targetDate.day)
         );
 
         const diffTime = target.getTime() - now.getTime();
@@ -1068,66 +1067,110 @@
         };
       }
 
+      // Leap year calculations
+      function isGregorianLeapYear(year) {
+        return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+      }
+
+      function isPersianLeapYear(year) {
+        // Persian calendar leap year based on 33-year cycle
+        const cycle = year % 33;
+        return [1, 5, 9, 13, 17, 21, 25, 29].includes(cycle);
+      }
+
       // Calendar conversion functions
       function gregorianToPersian(gYear, gMonth, gDay) {
-        let pYear = gYear - 621;
-        if (gMonth < 3 || (gMonth === 3 && gDay < 21)) {
-          pYear--;
-        }
+        // Convert Gregorian to Julian Day Number (JDN)
+        const a = Math.floor((14 - gMonth) / 12);
+        const y = gYear + 4800 - a;
+        const m = gMonth + 12 * a - 3;
+        let jd =
+          gDay +
+          Math.floor((153 * m + 2) / 5) +
+          365 * y +
+          Math.floor(y / 4) -
+          Math.floor(y / 100) +
+          Math.floor(y / 400) -
+          32045;
 
-        let pMonth, pDay;
-        const springStart = new Date(gYear, 2, 21);
-        const currentDate = new Date(gYear, gMonth - 1, gDay);
-        const dayOfYear = Math.floor(
-          (currentDate - springStart) / (1000 * 60 * 60 * 24)
-        );
+        // Persian epoch (March 19, 622 CE) in JDN
+        const persianEpochJD = 1948320.5;
+        const daysSinceEpoch = jd - persianEpochJD;
 
-        if (dayOfYear < 0) {
-          pYear--;
-          const prevSpringStart = new Date(gYear - 1, 2, 21);
-          const adjustedDayOfYear = Math.floor(
-            (currentDate - prevSpringStart) / (1000 * 60 * 60 * 24)
-          );
-          [pMonth, pDay] = dayOfYearToPersianMonthDay(adjustedDayOfYear);
-        } else {
-          [pMonth, pDay] = dayOfYearToPersianMonthDay(dayOfYear);
+        // Calculate Persian year
+        let pYear = Math.floor(daysSinceEpoch / 365.2422) + 1;
+        let remainingDays = daysSinceEpoch - Math.floor((pYear - 1) * 365.2422);
+
+        // Adjust for leap years
+        const monthDays = [
+          31,
+          31,
+          31,
+          31,
+          31,
+          31,
+          30,
+          30,
+          30,
+          30,
+          30,
+          isPersianLeapYear(pYear) ? 30 : 29,
+        ];
+        let pMonth = 0;
+        let pDay = Math.floor(remainingDays) + 1;
+
+        for (let i = 0; i < 12; i++) {
+          if (pDay <= monthDays[i]) {
+            pMonth = i + 1;
+            break;
+          }
+          pDay -= monthDays[i];
         }
 
         return { year: pYear, month: pMonth, day: pDay };
       }
 
-      function dayOfYearToPersianMonthDay(dayOfYear) {
-        if (dayOfYear < 186) {
-          const month = Math.floor(dayOfYear / 31) + 1;
-          const day = (dayOfYear % 31) + 1;
-          return [Math.min(month, 6), day];
-        } else {
-          const remainingDays = dayOfYear - 186;
-          const month = Math.floor(remainingDays / 30) + 7;
-          const day = (remainingDays % 30) + 1;
-          return [Math.min(month, 12), Math.min(day, month === 12 ? 29 : 30)];
-        }
-      }
-
       function persianToGregorian(pYear, pMonth, pDay) {
-        const gYear = pYear + 621;
-        let dayOfYear = 0;
-        if (pMonth <= 6) {
-          dayOfYear = (pMonth - 1) * 31 + pDay - 1;
-        } else {
-          dayOfYear = 186 + (pMonth - 7) * 30 + pDay - 1;
+        // Persian epoch (March 19, 622 CE) in JDN
+        const persianEpochJD = 1948320.5;
+        let days = Math.floor((pYear - 1) * 365.2422);
+
+        // Add days for months
+        const monthDays = [
+          31,
+          31,
+          31,
+          31,
+          31,
+          31,
+          30,
+          30,
+          30,
+          30,
+          30,
+          isPersianLeapYear(pYear) ? 30 : 29,
+        ];
+        for (let i = 0; i < pMonth - 1; i++) {
+          days += monthDays[i];
         }
+        days += pDay - 1;
 
-        const nowruz = new Date(gYear, 2, 21);
-        const targetDate = new Date(
-          nowruz.getTime() + dayOfYear * 24 * 60 * 60 * 1000
-        );
+        // Convert to JDN
+        const jd = persianEpochJD + days;
 
-        return {
-          year: targetDate.getFullYear(),
-          month: targetDate.getMonth() + 1,
-          day: targetDate.getDate(),
-        };
+        // Convert JDN to Gregorian
+        const l = Math.floor(jd + 68569);
+        const n = Math.floor((4 * l) / 146097);
+        const l2 = l - Math.floor((146097 * n + 3) / 4);
+        const i = Math.floor((4000 * (l2 + 1)) / 1461001);
+        const l3 = l2 - Math.floor((1461 * i) / 4) + 31;
+        const j = Math.floor((80 * l3) / 2447);
+        const gDay = l3 - Math.floor((2447 * j) / 80);
+        const l4 = Math.floor(j / 11);
+        const gMonth = j + 2 - 12 * l4;
+        const gYear = 100 * (n - 49) + i + l4;
+
+        return { year: gYear, month: gMonth, day: gDay };
       }
 
       function persianToImperial(pYear, pMonth, pDay) {
@@ -1157,71 +1200,55 @@
       }
 
       function gregorianToHijri(gYear, gMonth, gDay) {
-        const totalDays = Math.floor(
-          (new Date(gYear, gMonth - 1, gDay) - new Date(622, 6, 16)) /
-            (1000 * 60 * 60 * 24)
+        const date = new Date(Date.UTC(gYear, gMonth - 1, gDay));
+        const jd = Math.floor(
+          (date.getTime() + ISTANBUL_OFFSET) / (1000 * 60 * 60 * 24) + 2440587.5
         );
-        const hYear = Math.floor(totalDays / 354.367) + 1;
-        const remainingDays = totalDays - Math.floor((hYear - 1) * 354.367);
+        const z = Math.floor(jd - 1948440 + 10632);
+        const n = Math.floor((z - 1) / 10631);
+        const z2 = z - 10631 * n;
+        const a = Math.floor((z2 - 1) / 354);
+        const b = z2 - 354 * a;
+        const hYear = n * 30 + a + 1;
+        const c = Math.floor((b + 28.5) / 29.5);
+        const hMonth = Math.min(c, 12);
+        const hDay = b - Math.floor(29.5 * (c - 1)) + 1;
 
-        let hMonth = 1;
-        let hDay = remainingDays;
-        const monthDays = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
-
-        for (let i = 0; i < 12; i++) {
-          if (hDay <= monthDays[i]) {
-            hMonth = i + 1;
-            break;
-          }
-          hDay -= monthDays[i];
-        }
-
-        return {
-          year: Math.max(1, hYear),
-          month: hMonth,
-          day: Math.max(1, hDay),
-        };
+        return { year: hYear, month: hMonth, day: hDay };
       }
 
       function hijriToGregorian(hYear, hMonth, hDay) {
-        const totalDays =
-          Math.floor((hYear - 1) * 354.367) +
-          [0, 30, 59, 89, 118, 148, 177, 207, 236, 266, 295, 325][hMonth - 1] +
-          hDay -
-          1;
-
-        const hijriEpoch = new Date(622, 6, 16);
-        const gDate = new Date(
-          hijriEpoch.getTime() + totalDays * 24 * 60 * 60 * 1000
+        const n = hYear - 1;
+        const a = Math.floor(n / 30);
+        const b = n - 30 * a;
+        const c = Math.floor((b * 354 + hMonth * 29.5 + hDay - 29) / 365.2422);
+        const days = Math.floor(
+          (n * 10631) / 30 + b * 354 + Math.floor(hMonth * 29.5) + hDay - 29
+        );
+        const jd = days + 1948440 - 1;
+        const date = new Date(
+          (jd - 2440587.5) * 1000 * 60 * 60 * 24 - ISTANBUL_OFFSET
         );
 
         return {
-          year: gDate.getFullYear(),
-          month: gDate.getMonth() + 1,
-          day: gDate.getDate(),
+          year: date.getUTCFullYear(),
+          month: date.getUTCMonth() + 1,
+          day: date.getUTCDate(),
         };
       }
 
       function gregorianToTurkish(gYear, gMonth, gDay) {
-        return {
-          year: gYear,
-          month: gMonth,
-          day: gDay,
-        };
+        return { year: gYear, month: gMonth, day: gDay };
       }
 
       function turkishToGregorian(tYear, tMonth, tDay) {
-        return {
-          year: tYear,
-          month: tMonth,
-          day: tDay,
-        };
+        return { year: tYear, month: tMonth, day: tDay };
       }
 
       function gregorianToChinese(gYear, gMonth, gDay) {
         const lunarEpoch = new Date(-2637, 1, 15);
         const daysSinceEpoch = Math.floor(
-          (new Date(gYear, gMonth - 1, gDay) - lunarEpoch) /
+          (new Date(Date.UTC(gYear, gMonth - 1, gDay)) - lunarEpoch) /
             (1000 * 60 * 60 * 24)
         );
         const lunarYear = Math.floor(daysSinceEpoch / 354.367) + 2637;
@@ -1292,18 +1319,18 @@
           lunarEpoch.getTime() + totalDays * 24 * 60 * 60 * 1000
         );
         return {
-          year: gDate.getFullYear(),
-          month: gDate.getMonth() + 1,
-          day: gDate.getDate(),
+          year: gDate.getUTCFullYear(),
+          month: gDate.getUTCMonth() + 1,
+          day: gDate.getUTCDate(),
         };
       }
 
       function gregorianToHebrew(gYear, gMonth, gDay) {
-        const hebrewEpoch = new Date(-3761, 9, 7);
-        const daysSinceEpoch = Math.floor(
-          (new Date(gYear, gMonth - 1, gDay) - hebrewEpoch) /
-            (1000 * 60 * 60 * 24)
+        const date = new Date(Date.UTC(gYear, gMonth - 1, gDay));
+        const jd = Math.floor(
+          (date.getTime() + ISTANBUL_OFFSET) / (1000 * 60 * 60 * 24) + 2440587.5
         );
+        const daysSinceEpoch = jd - 347998;
         const hYear = Math.floor(daysSinceEpoch / 354.367) + 3761;
         const remainingDays = daysSinceEpoch % 354.367;
         let hMonth = Math.floor(remainingDays / 29.53) + 1;
@@ -1317,42 +1344,44 @@
       }
 
       function hebrewToGregorian(hYear, hMonth, hDay) {
-        const hebrewEpoch = new Date(-3761, 9, 7);
-        const totalDays =
+        const daysSinceEpoch =
           (hYear - 3761) * 354.367 + (hMonth - 1) * 29.53 + (hDay - 1);
-        const gDate = new Date(
-          hebrewEpoch.getTime() + totalDays * 24 * 60 * 60 * 1000
+        const jd = daysSinceEpoch + 347998;
+        const date = new Date(
+          (jd - 2440587.5) * 1000 * 60 * 60 * 24 - ISTANBUL_OFFSET
         );
         return {
-          year: gDate.getFullYear(),
-          month: gDate.getMonth() + 1,
-          day: gDate.getDate(),
+          year: date.getUTCFullYear(),
+          month: date.getUTCMonth() + 1,
+          day: date.getUTCDate(),
         };
       }
 
       function unixToGregorian(timestamp) {
-        const date = new Date(timestamp * 1000);
+        const date = new Date(timestamp * 1000 + ISTANBUL_OFFSET);
         return {
-          year: date.getFullYear(),
-          month: date.getMonth() + 1,
-          day: date.getDate(),
+          year: date.getUTCFullYear(),
+          month: date.getUTCMonth() + 1,
+          day: date.getUTCDate(),
         };
       }
 
       function gregorianToUnix(gYear, gMonth, gDay) {
-        const date = new Date(gYear, gMonth - 1, gDay);
-        return Math.floor(date.getTime() / 1000);
+        const date = new Date(Date.UTC(gYear, gMonth - 1, gDay));
+        return Math.floor((date.getTime() - ISTANBUL_OFFSET) / 1000);
       }
 
       function getCurrentDate() {
-        const now = new Date();
+        const now = new Date(Date.now() + ISTANBUL_OFFSET);
         const gDate = {
-          year: now.getFullYear(),
-          month: now.getMonth() + 1,
-          day: now.getDate(),
+          year: now.getUTCFullYear(),
+          month: now.getUTCMonth() + 1,
+          day: now.getUTCDate(),
         };
-        const timestampSeconds = Math.floor(now.getTime() / 1000);
-        const timestampMillis = now.getTime();
+        const timestampSeconds = Math.floor(
+          (now.getTime() - ISTANBUL_OFFSET) / 1000
+        );
+        const timestampMillis = now.getTime() - ISTANBUL_OFFSET;
 
         const pDate = gregorianToPersian(gDate.year, gDate.month, gDate.day);
         const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
@@ -1412,8 +1441,8 @@
       }
 
       function getPersianDayName(date) {
-        const now = new Date(date.year, date.month - 1, date.day);
-        const dayIndex = now.getDay();
+        const now = new Date(Date.UTC(date.year, date.month - 1, date.day));
+        const dayIndex = now.getUTCDay();
         if (currentCalendar === "gregorian") {
           return `${persianDays[dayIndex]} (${englishDays[dayIndex]})`;
         } else if (currentCalendar === "turkish") {
@@ -1479,12 +1508,10 @@
 
       function switchCalendar(calendar) {
         currentCalendar = calendar;
-
-        document.querySelectorAll(".nav-tab").forEach((btn) => {
-          btn.classList.remove("active");
-        });
+        document
+          .querySelectorAll(".nav-tab")
+          .forEach((btn) => btn.classList.remove("active"));
         event.target.classList.add("active");
-
         updateDisplay();
       }
 
@@ -1741,17 +1768,17 @@
               gDate.month,
               gDate.day
             );
+            const cDate = gregorianToChinese(
+              gDate.year,
+              gDate.month,
+              gDate.day
+            );
             const heDate = gregorianToHebrew(
               gDate.year,
               gDate.month,
               gDate.day
             );
             const unixTimestamp = gregorianToUnix(
-              gDate.year,
-              gDate.month,
-              gDate.day
-            );
-            const cDate = gregorianToChinese(
               gDate.year,
               gDate.month,
               gDate.day
@@ -1858,19 +1885,17 @@
         Object.keys(results).forEach((calendar) => {
           const card = document.createElement("div");
           card.className = "result-card";
-
           card.innerHTML = `
-                    <div class="result-title">${titles[calendar]}</div>
-                    <div class="result-date persian-num">${formatDate(
-                      results[calendar],
-                      calendar
-                    )}</div>
-                    <div class="result-numeric">${formatNumericDate(
-                      results[calendar],
-                      calendar
-                    )}</div>
-                `;
-
+      <div class="result-title">${titles[calendar]}</div>
+      <div class="result-date persian-num">${formatDate(
+        results[calendar],
+        calendar
+      )}</div>
+      <div class="result-numeric">${formatNumericDate(
+        results[calendar],
+        calendar
+      )}</div>
+    `;
           container.appendChild(card);
         });
       }
@@ -1894,14 +1919,13 @@
           : "time-diff-past";
 
         container.innerHTML = `
-                <div class="time-diff-title">⏰ فاصله زمانی تا امروز</div>
-                <div class="time-diff-content">
-                    <span class="${statusClass}">${timeText}</span>
-                    <br>
-                    <strong class="${statusClass}">${statusText}</strong>
-                </div>
-            `;
-
+    <div class="time-diff-title">⏰ فاصله زمانی تا امروز</div>
+    <div class="time-diff-content">
+      <span class="${statusClass}">${timeText}</span>
+      <br>
+      <strong class="${statusClass}">${statusText}</strong>
+    </div>
+  `;
         container.style.display = "block";
       }
 
