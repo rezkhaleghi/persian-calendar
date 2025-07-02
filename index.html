@@ -1508,10 +1508,12 @@
 
       function switchCalendar(calendar) {
         currentCalendar = calendar;
-        document
-          .querySelectorAll(".nav-tab")
-          .forEach((btn) => btn.classList.remove("active"));
+
+        document.querySelectorAll(".nav-tab").forEach((btn) => {
+          btn.classList.remove("active");
+        });
         event.target.classList.add("active");
+
         updateDisplay();
       }
 
@@ -1885,17 +1887,19 @@
         Object.keys(results).forEach((calendar) => {
           const card = document.createElement("div");
           card.className = "result-card";
+
           card.innerHTML = `
-      <div class="result-title">${titles[calendar]}</div>
-      <div class="result-date persian-num">${formatDate(
-        results[calendar],
-        calendar
-      )}</div>
-      <div class="result-numeric">${formatNumericDate(
-        results[calendar],
-        calendar
-      )}</div>
-    `;
+                    <div class="result-title">${titles[calendar]}</div>
+                    <div class="result-date persian-num">${formatDate(
+                      results[calendar],
+                      calendar
+                    )}</div>
+                    <div class="result-numeric">${formatNumericDate(
+                      results[calendar],
+                      calendar
+                    )}</div>
+                `;
+
           container.appendChild(card);
         });
       }
@@ -1919,13 +1923,14 @@
           : "time-diff-past";
 
         container.innerHTML = `
-    <div class="time-diff-title">⏰ فاصله زمانی تا امروز</div>
-    <div class="time-diff-content">
-      <span class="${statusClass}">${timeText}</span>
-      <br>
-      <strong class="${statusClass}">${statusText}</strong>
-    </div>
-  `;
+                <div class="time-diff-title">⏰ فاصله زمانی تا امروز</div>
+                <div class="time-diff-content">
+                    <span class="${statusClass}">${timeText}</span>
+                    <br>
+                    <strong class="${statusClass}">${statusText}</strong>
+                </div>
+            `;
+
         container.style.display = "block";
       }
 
