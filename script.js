@@ -131,7 +131,6 @@ const persianDays = [
 
 let currentCalendar = "imperial";
 const IMPERIAL_EPOCH_DIFFERENCE = 1180;
-const ISTANBUL_OFFSET = 3 * 60 * 60 * 1000; // +3 GMT in milliseconds
 
 // Calendar descriptions
 const calendarDescriptions = {
@@ -190,11 +189,11 @@ function formatNumericDate(date, calendar) {
 
 // Format current time and day
 function formatCurrentTimeAndDay() {
-  const now = new Date(Date.now() + ISTANBUL_OFFSET);
-  const hours = now.getUTCHours().toString().padStart(2, "0");
-  const minutes = now.getUTCMinutes().toString().padStart(2, "0");
-  const seconds = now.getUTCSeconds().toString().padStart(2, "0");
-  const dayIndex = now.getUTCDay();
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const seconds = now.getSeconds().toString().padStart(2, "0");
+  const dayIndex = now.getDay();
   const dayName = persianDays[dayIndex];
   return `زمان کنونی: ${toPersianNum(hours)}:${toPersianNum(
     minutes
@@ -208,9 +207,11 @@ function updateTimeDisplay() {
 
 // Calculate time difference
 function calculateTimeDifference(targetDate) {
-  const now = new Date(Date.now() + ISTANBUL_OFFSET);
+  const now = new Date();
   const target = new Date(
-    Date.UTC(targetDate.year, targetDate.month - 1, targetDate.day)
+    targetDate.year,
+    targetDate.month - 1,
+    targetDate.day
   );
 
   const diffTime = target.getTime() - now.getTime();
@@ -241,7 +242,7 @@ function isGregorianLeapYear(year) {
 
 function isPersianLeapYear(year) {
   // Persian calendar leap year based on 33-year cycle
-  const cycle = year % 33;
+  const cycle = (((year - 474) % 2820) + 2820) % 33;
   return [1, 5, 9, 13, 17, 21, 25, 29].includes(cycle);
 }
 
@@ -251,7 +252,7 @@ function gregorianToPersian(gYear, gMonth, gDay) {
   const a = Math.floor((14 - gMonth) / 12);
   const y = gYear + 4800 - a;
   const m = gMonth + 12 * a - 3;
-  let jd =
+  const jd =
     gDay +
     Math.floor((153 * m + 2) / 5) +
     365 * y +
@@ -261,12 +262,12 @@ function gregorianToPersian(gYear, gMonth, gDay) {
     32045;
 
   // Persian epoch (March 19, 622 CE) in JDN
-  const persianEpochJD = 1948320.5;
+  const persianEpochJD = 1948321; // Adjusted to midnight
   const daysSinceEpoch = jd - persianEpochJD;
 
   // Calculate Persian year
-  let pYear = Math.floor(daysSinceEpoch / 365.2422) + 1;
-  let remainingDays = daysSinceEpoch - Math.floor((pYear - 1) * 365.2422);
+  let pYear = Math.floor((daysSinceEpoch + 0.5) / 365.242198581) + 1;
+  let remainingDays = daysSinceEpoch - Math.floor((pYear - 1) * 365.242198581);
 
   // Adjust for leap years
   const monthDays = [
@@ -299,8 +300,8 @@ function gregorianToPersian(gYear, gMonth, gDay) {
 
 function persianToGregorian(pYear, pMonth, pDay) {
   // Persian epoch (March 19, 622 CE) in JDN
-  const persianEpochJD = 1948320.5;
-  let days = Math.floor((pYear - 1) * 365.2422);
+  const persianEpochJD = 1948321; // Adjusted to midnight
+  let days = Math.floor((pYear - 1) * 365.242198581);
 
   // Add days for months
   const monthDays = [
@@ -320,7 +321,7 @@ function persianToGregorian(pYear, pMonth, pDay) {
   for (let i = 0; i < pMonth - 1; i++) {
     days += monthDays[i];
   }
-  days += pDay - 1;
+  days += pDay;
 
   // Convert to JDN
   const jd = persianEpochJD + days;
@@ -367,10 +368,8 @@ function imperialToGregorian(iYear, iMonth, iDay) {
 }
 
 function gregorianToHijri(gYear, gMonth, gDay) {
-  const date = new Date(Date.UTC(gYear, gMonth - 1, gDay));
-  const jd = Math.floor(
-    (date.getTime() + ISTANBUL_OFFSET) / (1000 * 60 * 60 * 24) + 2440587.5
-  );
+  const date = new Date(gYear, gMonth - 1, gDay);
+  const jd = Math.floor(date.getTime() / (1000 * 60 * 60 * 24) + 2440587.5);
   const z = Math.floor(jd - 1948440 + 10632);
   const n = Math.floor((z - 1) / 10631);
   const z2 = z - 10631 * n;
@@ -393,14 +392,12 @@ function hijriToGregorian(hYear, hMonth, hDay) {
     (n * 10631) / 30 + b * 354 + Math.floor(hMonth * 29.5) + hDay - 29
   );
   const jd = days + 1948440 - 1;
-  const date = new Date(
-    (jd - 2440587.5) * 1000 * 60 * 60 * 24 - ISTANBUL_OFFSET
-  );
+  const date = new Date((jd - 2440587.5) * 1000 * 60 * 60 * 24);
 
   return {
-    year: date.getUTCFullYear(),
-    month: date.getUTCMonth() + 1,
-    day: date.getUTCDate(),
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
   };
 }
 
@@ -415,8 +412,7 @@ function turkishToGregorian(tYear, tMonth, tDay) {
 function gregorianToChinese(gYear, gMonth, gDay) {
   const lunarEpoch = new Date(-2637, 1, 15);
   const daysSinceEpoch = Math.floor(
-    (new Date(Date.UTC(gYear, gMonth - 1, gDay)) - lunarEpoch) /
-      (1000 * 60 * 60 * 24)
+    (new Date(gYear, gMonth - 1, gDay) - lunarEpoch) / (1000 * 60 * 60 * 24)
   );
   const lunarYear = Math.floor(daysSinceEpoch / 354.367) + 2637;
   const remainingDays = daysSinceEpoch % 354.367;
@@ -484,17 +480,15 @@ function chineseToGregorian(cYear, cMonth, cDay) {
     lunarEpoch.getTime() + totalDays * 24 * 60 * 60 * 1000
   );
   return {
-    year: gDate.getUTCFullYear(),
-    month: gDate.getUTCMonth() + 1,
-    day: gDate.getUTCDate(),
+    year: gDate.getFullYear(),
+    month: gDate.getMonth() + 1,
+    day: gDate.getDate(),
   };
 }
 
 function gregorianToHebrew(gYear, gMonth, gDay) {
-  const date = new Date(Date.UTC(gYear, gMonth - 1, gDay));
-  const jd = Math.floor(
-    (date.getTime() + ISTANBUL_OFFSET) / (1000 * 60 * 60 * 24) + 2440587.5
-  );
+  const date = new Date(gYear, gMonth - 1, gDay);
+  const jd = Math.floor(date.getTime() / (1000 * 60 * 60 * 24) + 2440587.5);
   const daysSinceEpoch = jd - 347998;
   const hYear = Math.floor(daysSinceEpoch / 354.367) + 3761;
   const remainingDays = daysSinceEpoch % 354.367;
@@ -512,39 +506,37 @@ function hebrewToGregorian(hYear, hMonth, hDay) {
   const daysSinceEpoch =
     (hYear - 3761) * 354.367 + (hMonth - 1) * 29.53 + (hDay - 1);
   const jd = daysSinceEpoch + 347998;
-  const date = new Date(
-    (jd - 2440587.5) * 1000 * 60 * 60 * 24 - ISTANBUL_OFFSET
-  );
+  const date = new Date((jd - 2440587.5) * 1000 * 60 * 60 * 24);
   return {
-    year: date.getUTCFullYear(),
-    month: date.getUTCMonth() + 1,
-    day: date.getUTCDate(),
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
   };
 }
 
 function unixToGregorian(timestamp) {
-  const date = new Date(timestamp * 1000 + ISTANBUL_OFFSET);
+  const date = new Date(timestamp * 1000);
   return {
-    year: date.getUTCFullYear(),
-    month: date.getUTCMonth() + 1,
-    day: date.getUTCDate(),
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
   };
 }
 
 function gregorianToUnix(gYear, gMonth, gDay) {
-  const date = new Date(Date.UTC(gYear, gMonth - 1, gDay));
-  return Math.floor((date.getTime() - ISTANBUL_OFFSET) / 1000);
+  const date = new Date(gYear, gMonth - 1, gDay);
+  return Math.floor(date.getTime() / 1000);
 }
 
 function getCurrentDate() {
-  const now = new Date(Date.now() + ISTANBUL_OFFSET);
+  const now = new Date();
   const gDate = {
-    year: now.getUTCFullYear(),
-    month: now.getUTCMonth() + 1,
-    day: now.getUTCDate(),
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+    day: now.getDate(),
   };
-  const timestampSeconds = Math.floor((now.getTime() - ISTANBUL_OFFSET) / 1000);
-  const timestampMillis = now.getTime() - ISTANBUL_OFFSET;
+  const timestampSeconds = Math.floor(now.getTime() / 1000);
+  const timestampMillis = now.getTime();
 
   const pDate = gregorianToPersian(gDate.year, gDate.month, gDate.day);
   const iDate = persianToImperial(pDate.year, pDate.month, pDate.day);
