@@ -120,13 +120,13 @@ const hebrewMonths = [
 ];
 
 const persianDays = [
-  "شنبه",
-  "یکشنبه",
-  "دوشنبه",
-  "سه‌شنبه",
-  "چهارشنبه",
-  "پنج‌شنبه",
-  "جمعه",
+  "یکشنبه", // Sunday
+  "دوشنبه", // Monday
+  "سه‌شنبه", // Tuesday
+  "چهارشنبه", // Wednesday
+  "پنج‌شنبه", // Thursday
+  "جمعه", // Friday
+  "شنبه", // Saturday
 ];
 
 let currentCalendar = "imperial";
