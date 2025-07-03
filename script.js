@@ -299,8 +299,8 @@ function gregorianToPersian(gYear, gMonth, gDay) {
 }
 
 function persianToGregorian(pYear, pMonth, pDay) {
-  // Persian epoch (March 19, 622 CE) in JDN
-  const persianEpochJD = 1948321; // Adjusted to midnight
+  // Persian epoch (March 21, 622 CE) in JDN
+  const persianEpochJD = 1948320; // Adjusted to start of March 21, 622 CE
   let days = Math.floor((pYear - 1) * 365.242198581);
 
   // Add days for months
@@ -321,7 +321,7 @@ function persianToGregorian(pYear, pMonth, pDay) {
   for (let i = 0; i < pMonth - 1; i++) {
     days += monthDays[i];
   }
-  days += pDay;
+  days += pDay - 1; // Adjust for day counting (epoch day is inclusive)
 
   // Convert to JDN
   const jd = persianEpochJD + days;
